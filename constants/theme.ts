@@ -1,24 +1,5 @@
-/**
- * theme.ts — Design Token System
- *
- * Single source of truth for every visual decision in the app.
- * Components never use magic numbers — they import tokens from here.
- *
- * Structure:
- *   palette    → raw named colors (private, never used in components)
- *   colors     → semantic tokens: background, text, accent, border, status
- *   typography → font sizes, weights, line heights
- *   spacing    → 8-point grid scale
- *   radii      → border radius scale
- *   shadows    → elevation presets (iOS shadow* / Android elevation)
- */
-
 import { Platform } from "react-native";
 
-// ---------------------------------------------------------------------------
-// Palette — raw color values
-// Private to this file. Components never import from palette directly.
-// ---------------------------------------------------------------------------
 const palette = {
   white: "#FFFFFF",
   black: "#000000",
@@ -42,10 +23,6 @@ const palette = {
   red500: "#EF4444",
 } as const;
 
-// ---------------------------------------------------------------------------
-// Colors — semantic tokens
-// Components reference colors.background.primary, not raw hex values.
-// ---------------------------------------------------------------------------
 const lightColors = {
   background: {
     primary: palette.white,
@@ -79,40 +56,35 @@ const lightColors = {
 
 const darkColors = {
   background: {
-    primary: palette.grey900,
-    secondary: palette.grey800,
-    tertiary: palette.grey700,
+    primary: "#000000",
+    secondary: "#0D0D0D",
+    tertiary: "#1A1A1A",
   },
   text: {
     primary: "#F0F0F0",
-    secondary: palette.grey400,
-    muted: palette.grey600,
-    inverse: palette.grey900,
+    secondary: "#888888",
+    muted: "#555555",
+    inverse: "#000000",
   },
   accent: {
-    primary: palette.indigo400,
-    secondary: palette.indigo600,
-    muted: "#1E1E3A",
+    primary: "#818CF8",
+    secondary: "#4F46E5",
+    muted: "#0F0F2A",
   },
   border: {
-    default: palette.grey700,
-    strong: palette.grey600,
+    default: "#1F1F1F",
+    strong: "#2A2A2A",
   },
   status: {
-    success: palette.green400,
-    error: palette.red400,
+    success: "#4ADE80",
+    error: "#F87171",
   },
   checkbox: {
-    checked: palette.indigo400,
-    unchecked: palette.grey700,
+    checked: "#818CF8",
+    unchecked: "#2A2A2A",
   },
 } as const;
 
-// ---------------------------------------------------------------------------
-// Typography
-// System fonts — no loading delay, no FOUT (flash of unstyled text).
-// Sizes follow a modular scale. Weights are string literals (RN requirement).
-// ---------------------------------------------------------------------------
 export const typography = {
   fonts: Platform.select({
     ios: { sans: "System" },
@@ -142,11 +114,6 @@ export const typography = {
   },
 } as const;
 
-// ---------------------------------------------------------------------------
-// Spacing — 8-point grid
-// Every margin, padding, and gap should use one of these values.
-// This creates consistent visual rhythm across the whole app.
-// ---------------------------------------------------------------------------
 export const spacing = {
   0: 0,
   1: 4,
@@ -161,9 +128,6 @@ export const spacing = {
   16: 64,
 } as const;
 
-// ---------------------------------------------------------------------------
-// Radii — border radius scale
-// ---------------------------------------------------------------------------
 export const radii = {
   none: 0,
   sm: 4,
@@ -173,11 +137,6 @@ export const radii = {
   full: 9999,
 } as const;
 
-// ---------------------------------------------------------------------------
-// Shadows
-// iOS and Android handle elevation differently so we branch with
-// Platform.select. Components spread the result: { ...shadows.md }
-// ---------------------------------------------------------------------------
 export const shadows = {
   none: {},
   sm: Platform.select({
@@ -212,13 +171,6 @@ export const shadows = {
   }),
 } as const;
 
-// ---------------------------------------------------------------------------
-// Colors interface
-// Describes the shape of a color set without locking to literal hex values.
-// This is what allows both lightColors and darkColors to satisfy Theme.
-// Without this, TypeScript would infer colors: typeof lightColors and reject
-// darkColors because "#1A1A1A" is not assignable to "#FFFFFF".
-// ---------------------------------------------------------------------------
 export interface Colors {
   background: {
     primary: string;
@@ -250,9 +202,6 @@ export interface Colors {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Theme — the full token set returned by useTheme()
-// ---------------------------------------------------------------------------
 export type Theme = {
   colors: Colors;
   typography: typeof typography;
@@ -268,6 +217,7 @@ export const lightTheme: Theme = {
   radii,
   shadows,
 };
+
 export const darkTheme: Theme = {
   colors: darkColors,
   typography,
