@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { View, Text, Pressable } from "react-native";
+import React, { useCallback, useEffect, useRef } from "react";
+import { View, Text, Pressable, Animated } from "react-native";
 import { useTheme } from "@/hooks/use-theme";
 import { FONT } from "@/constants/fonts";
 import type { HabitWithStreak } from "@/db/types";
@@ -24,11 +24,44 @@ function PixelSquareEmpty({ size = 18 }: { size?: number }) {
   );
 }
 
-function PixelSquareDone({ size = 18 }: { size?: number }) {
-  const DOT = 2;
-  const GAP = 3;
+function PixelSquareDone({
+  size = 18,
+  animate = false,
+}: {
+  size?: number;
+  animate?: boolean;
+}) {
+  const DOT = 1.5;
+  const GAP = 2;
   const STEP = DOT + GAP;
-  const count = Math.floor((size - 2) / STEP);
+  const PADDING = 2;
+  const count = Math.floor((size - PADDING * 2) / STEP);
+  const total = count * count;
+
+  const anims = useRef<Animated.Value[]>([]);
+
+  if (anims.current.length !== total) {
+    anims.current = Array.from({ length: total }, () => new Animated.Value(0));
+  }
+
+  useEffect(() => {
+    if (!animate) return;
+
+    anims.current.forEach((a) => a.setValue(0));
+
+    const animations = anims.current.map((a, i) =>
+      Animated.sequence([
+        Animated.delay(i * 35),
+        Animated.timing(a, {
+          toValue: 1,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    Animated.parallel(animations).start();
+  }, [animate]);
 
   return (
     <View
@@ -49,16 +82,31 @@ function PixelSquareDone({ size = 18 }: { size?: number }) {
             marginBottom: row < count - 1 ? GAP : 0,
           }}
         >
-          {Array.from({ length: count }, (_, col) => (
-            <View
-              key={col}
-              style={{
-                width: DOT,
-                height: DOT,
-                backgroundColor: "#000000",
-              }}
-            />
-          ))}
+          {Array.from({ length: count }, (_, col) => {
+            const idx = row * count + col;
+            const anim = anims.current[idx];
+            return (
+              <Animated.View
+                key={col}
+                style={{
+                  width: DOT,
+                  height: DOT,
+                  backgroundColor: "#000000",
+                  opacity: animate ? anim : 1,
+                  transform: animate
+                    ? [
+                        {
+                          scale: anim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, 1],
+                          }),
+                        },
+                      ]
+                    : [],
+                }}
+              />
+            );
+          })}
         </View>
       ))}
     </View>
@@ -180,6 +228,16 @@ export function HabitRow({ habit, onToggle, onEdit }: Props) {
 
   const isDone = habit.completedToday;
 
+  const prevDoneRef = useRef(isDone);
+  const justDoneRef = useRef(false);
+
+  if (prevDoneRef.current !== isDone) {
+    justDoneRef.current = !prevDoneRef.current && isDone;
+    prevDoneRef.current = isDone;
+  }
+
+  const justDone = justDoneRef.current;
+
   return (
     <View
       style={{
@@ -219,7 +277,7 @@ export function HabitRow({ habit, onToggle, onEdit }: Props) {
       >
         <View style={{ marginRight: spacing[3] }}>
           {isDone ? (
-            <PixelSquareDone size={18} />
+            <PixelSquareDone size={18} animate={justDone} />
           ) : (
             <PixelSquareEmpty size={18} />
           )}
