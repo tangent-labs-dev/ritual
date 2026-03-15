@@ -1,12 +1,82 @@
 import { HabitModal } from "@/components/habits/HabitModal";
 import { FONT } from "@/constants/fonts";
+import { todayString } from "@/db/completions";
 import type { DayOfWeek, Habit, ScheduleType } from "@/db/types";
-import { useHabits } from "@/hooks/use-habits";
+import { useHabitsWithHeatmap } from "@/hooks/use-habits-heatmap";
+import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// ── Heatmap helpers ──────────────────────────────────────────────────────────
+
+function buildHeatmapGrid(weeksCount = 13): string[][] {
+  const today = new Date();
+  const dow = today.getDay(); // 0=Sun
+  const daysToCurrentMonday = (dow - 1 + 7) % 7;
+  const thisMonday = new Date(today);
+  thisMonday.setDate(today.getDate() - daysToCurrentMonday);
+  const startMonday = new Date(thisMonday);
+  startMonday.setDate(thisMonday.getDate() - (weeksCount - 1) * 7);
+
+  return Array.from({ length: weeksCount }, (_, col) =>
+    Array.from({ length: 7 }, (_, row) => {
+      const d = new Date(startMonday);
+      d.setDate(startMonday.getDate() + col * 7 + row);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }),
+  );
+}
+
+const GAP = 2;
+const WEEKS = 24;
+
+const GRID = buildHeatmapGrid(WEEKS);
+const TODAY = todayString();
+
+function MiniHeatmap({ completedDates }: { completedDates: Set<string> }) {
+  const { width } = useWindowDimensions();
+
+  const cellSize = Math.floor((width - 32 - (WEEKS - 1) * GAP) / WEEKS);
+
+  return (
+    <View style={{ flexDirection: "row", gap: GAP, marginTop: 10 }}>
+      {GRID.map((week, col) => (
+        <View key={col} style={{ gap: GAP }}>
+          {week.map((dateStr, row) => {
+            const isFuture = dateStr > TODAY;
+            const isDone = !isFuture && completedDates.has(dateStr);
+            const isToday = dateStr === TODAY;
+            return (
+              <View
+                key={row}
+                style={{
+                  width: cellSize,
+                  height: cellSize,
+                  backgroundColor: isFuture
+                    ? "transparent"
+                    : isDone
+                      ? "#FFFFFF"
+                      : "#111111",
+                  borderWidth: isToday ? 1 : 0,
+                  borderColor: "#444444",
+                }}
+              />
+            );
+          })}
+        </View>
+      ))}
+    </View>
+  );
+}
 
 function formatSchedule(habit: Habit): string {
   if (habit.scheduleType === "daily") return "DAILY";
@@ -15,30 +85,6 @@ function formatSchedule(habit: Habit): string {
     .filter(Boolean)
     .map((d) => d.slice(0, 1).toUpperCase())
     .join(" · ");
-}
-
-function ScheduleChip({ habit }: { habit: Habit }) {
-  return (
-    <View
-      style={{
-        borderWidth: 1,
-        borderColor: "#1E1E1E",
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-      }}
-    >
-      <Text
-        style={{
-          fontFamily: FONT.mono.regular,
-          fontSize: 8,
-          color: "#444444",
-          letterSpacing: 2,
-        }}
-      >
-        {formatSchedule(habit)}
-      </Text>
-    </View>
-  );
 }
 
 function DeleteAction({ onDelete }: { onDelete: () => void }) {
@@ -68,12 +114,14 @@ function DeleteAction({ onDelete }: { onDelete: () => void }) {
   );
 }
 
-function HabitManageRow({
+function HabitRow({
   habit,
+  completedDates,
   onDelete,
   onEdit,
 }: {
   habit: Habit;
+  completedDates: Set<string>;
   onDelete: (id: number) => void;
   onEdit: (habit: Habit) => void;
 }) {
@@ -87,32 +135,58 @@ function HabitManageRow({
       <Pressable
         onPress={() => onEdit(habit)}
         style={({ pressed }) => ({
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingVertical: 14,
+          paddingVertical: 12,
           paddingHorizontal: 16,
           backgroundColor: pressed ? "#0A0A0A" : "#000000",
         })}
       >
-        <Text
+        <View
           style={{
-            fontFamily: FONT.mono.bold,
-            fontSize: 13,
-            color: "#FFFFFF",
-            letterSpacing: 0.5,
-            flex: 1,
-            marginRight: 12,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
-          numberOfLines={1}
         >
-          {habit.name.toUpperCase()}
-        </Text>
-        <ScheduleChip habit={habit} />
+          <Text
+            style={{
+              fontFamily: FONT.mono.bold,
+              fontSize: 13,
+              color: "#FFFFFF",
+              letterSpacing: 0.5,
+              flex: 1,
+              marginRight: 12,
+            }}
+            numberOfLines={1}
+          >
+            {habit.name.toUpperCase()}
+          </Text>
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#1E1E1E",
+              paddingHorizontal: 6,
+              paddingVertical: 2,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: FONT.mono.regular,
+                fontSize: 8,
+                color: "#444444",
+                letterSpacing: 2,
+              }}
+            >
+              {formatSchedule(habit)}
+            </Text>
+          </View>
+        </View>
+        <MiniHeatmap completedDates={completedDates} />
       </Pressable>
     </ReanimatedSwipeable>
   );
 }
+
+// ── FAB ──────────────────────────────────────────────────────────────────────
 
 function PixelFAB({ onPress }: { onPress: () => void }) {
   return (
@@ -147,43 +221,25 @@ function PixelFAB({ onPress }: { onPress: () => void }) {
   );
 }
 
-function SectionDivider({ label }: { label: string }) {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-        marginBottom: 12,
-        marginTop: 4,
-      }}
-    >
-      <View style={{ width: 3, height: 10, backgroundColor: "#FFFFFF" }} />
-      <Text
-        style={{
-          fontFamily: FONT.mono.bold,
-          fontSize: 9,
-          color: "#444444",
-          letterSpacing: 4,
-        }}
-      >
-        {label}
-      </Text>
-      <View
-        style={{
-          flex: 1,
-          height: 1,
-          backgroundColor: "#FFFFFF",
-          opacity: 0.06,
-        }}
-      />
-    </View>
-  );
-}
+// ── Screen ───────────────────────────────────────────────────────────────────
 
 export default function HabitsScreen() {
   const insets = useSafeAreaInsets();
-  const { habits, loading, addHabit, editHabit, removeHabit } = useHabits();
+  const {
+    habits,
+    completionMap,
+    loading,
+    addHabit,
+    editHabit,
+    removeHabit,
+    refresh,
+  } = useHabitsWithHeatmap();
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
@@ -220,12 +276,11 @@ export default function HabitsScreen() {
         contentContainerStyle={{
           paddingTop: insets.top + 16,
           paddingBottom: insets.bottom + 96,
-          paddingHorizontal: 16,
         }}
-        ListHeaderComponent={<SectionDivider label="ALL HABITS" />}
         renderItem={({ item }) => (
-          <HabitManageRow
+          <HabitRow
             habit={item}
+            completedDates={completionMap.get(item.id) ?? new Set()}
             onDelete={removeHabit}
             onEdit={handleEdit}
           />
