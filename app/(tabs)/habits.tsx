@@ -16,11 +16,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// ── Heatmap helpers ──────────────────────────────────────────────────────────
-
 function buildHeatmapGrid(weeksCount = 13): string[][] {
   const today = new Date();
-  const dow = today.getDay(); // 0=Sun
+  const dow = today.getDay();
   const daysToCurrentMonday = (dow - 1 + 7) % 7;
   const thisMonday = new Date(today);
   thisMonday.setDate(today.getDate() - daysToCurrentMonday);
@@ -186,8 +184,6 @@ function HabitRow({
   );
 }
 
-// ── FAB ──────────────────────────────────────────────────────────────────────
-
 function PixelFAB({ onPress }: { onPress: () => void }) {
   return (
     <Pressable
@@ -220,8 +216,6 @@ function PixelFAB({ onPress }: { onPress: () => void }) {
     </Pressable>
   );
 }
-
-// ── Screen ───────────────────────────────────────────────────────────────────
 
 export default function HabitsScreen() {
   const insets = useSafeAreaInsets();
