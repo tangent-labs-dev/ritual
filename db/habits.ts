@@ -56,6 +56,10 @@ export async function deleteHabit(id: number) {
   await db.delete(habits).where(eq(habits.id, id));
 }
 
+export async function deleteAllHabits() {
+  await db.delete(habits);
+}
+
 export async function updateHabitOrder(orderedIds: number[]) {
   await Promise.all(
     orderedIds.map((id, index) =>

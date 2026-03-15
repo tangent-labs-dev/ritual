@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/use-theme";
 import { useTodayHabits } from "@/hooks/use-completions";
 import { useHabits } from "@/hooks/use-habits";
+import { useFocusEffect } from "@react-navigation/native";
 import { DateHeader } from "@/components/today/DateHeader";
 import { DailyQuote } from "@/components/today/DailyQuote";
 import { ProgressBar } from "@/components/today/ProgressBar";
@@ -279,6 +280,12 @@ export default function TodayScreen() {
   const { habits, loading, toggle, refresh } = useTodayHabits();
   const { addHabit, editHabit } = useHabits();
   const insets = useSafeAreaInsets();
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingHabit, setEditingHabit] = useState<HabitWithStreak | null>(

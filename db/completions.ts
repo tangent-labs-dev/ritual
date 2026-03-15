@@ -18,6 +18,10 @@ export async function getAllCompletions() {
   return db.select().from(completions);
 }
 
+export async function deleteAllCompletions() {
+  await db.delete(completions);
+}
+
 export async function isCompleted(
   habitId: number,
   date: string,
