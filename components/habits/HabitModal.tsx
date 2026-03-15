@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { FONT } from "@/constants/fonts";
+import type { DayOfWeek, Habit, ScheduleType } from "@/db/types";
+import { useTheme } from "@/hooks/use-theme";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  View,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
   Text,
   TextInput,
-  Pressable,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
   TouchableWithoutFeedback,
-  Keyboard,
-  ScrollView,
+  View,
 } from "react-native";
-import { useTheme } from "@/hooks/use-theme";
-import type { ScheduleType, DayOfWeek, HabitWithStreak } from "@/db/types";
-import { FONT } from "@/constants/fonts";
 
 const DAYS: DayOfWeek[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -25,7 +25,7 @@ interface Props {
     scheduleType: ScheduleType,
     scheduleDays: DayOfWeek[],
   ) => void;
-  habit?: HabitWithStreak;
+  habit?: Habit;
 }
 
 function PixelSectionLabel({ label }: { label: string }) {

@@ -1,4 +1,4 @@
-import { and, eq, between, desc } from "drizzle-orm";
+import { and, between, desc, eq } from "drizzle-orm";
 import { db } from "./index";
 import { completions } from "./schema";
 
@@ -92,4 +92,14 @@ export async function getCompletionsInRange(
         between(completions.completedDate, fromDate, toDate),
       ),
     );
+}
+
+export async function getAllCompletionsInRange(
+  fromDate: string,
+  toDate: string,
+) {
+  return db
+    .select()
+    .from(completions)
+    .where(between(completions.completedDate, fromDate, toDate));
 }
