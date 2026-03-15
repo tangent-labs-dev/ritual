@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "ritual",
+    "name": "Ritual",
     "slug": "ritual",
+    "description": "A minimalistic, open source, ad-free, no tracker habit tracker app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -12,6 +13,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "dev.tangentlabs.ritual",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

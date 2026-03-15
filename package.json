@@ -1,7 +1,16 @@
 {
   "name": "ritual",
+  "description": "A minimalistic, open source, ad-free, no tracker habit tracker app",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tangent-labs-dev/ritual.git"
+  },
+  "homepage": "https://github.com/tangent-labs-dev/ritual",
+  "bugs": {
+    "url": "https://github.com/tangent-labs-dev/ritual/issues"
+  },
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
