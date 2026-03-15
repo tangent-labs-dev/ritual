@@ -14,6 +14,10 @@ export async function getCompletionsForDate(date: string) {
     .where(eq(completions.completedDate, date));
 }
 
+export async function getAllCompletions() {
+  return db.select().from(completions);
+}
+
 export async function isCompleted(
   habitId: number,
   date: string,
