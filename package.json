@@ -12,13 +12,18 @@
     "url": "https://github.com/tangent-labs-dev/ritual/issues"
   },
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
+    "dev": "next dev",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
+    "@opennextjs/cloudflare": "^1.17.1",
     "dexie": "^4.2.1",
     "dexie-react-hooks": "^4.2.0",
     "next": "16.1.5",
@@ -31,6 +36,7 @@
     "@types/react-dom": "^19.2.1",
     "eslint": "^9.39.0",
     "eslint-config-next": "16.1.5",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.73.0"
   }
 }
